@@ -3,9 +3,15 @@
 ## TODOs
 
 ### For proposal
- - What the attack/vulnerability is about
- - Why you picked that paper
- - What exactly you will implement. 
+ - What the attack/vulnerability is about (Arian)
+ - Why you picked that paper (Nick)
+
+#### What exactly you will implement. (Mustafa)
+ - mix structure (n seenders -> mix -> n recievers)
+ - data flow/corellation attack attack
+ - extract information based on the metric given in the paper (distignuish the data flow)
+ - produce graphs to show the sucess of the attack
+
 
 ### For implementation
  - decide language
