@@ -1,4 +1,4 @@
-# mix-flow-corellation-attack
+# Mix flow-corellation attack
 
 ## TODOs
 
@@ -20,3 +20,12 @@
  - We all commit to main branch, no need for pull requests
  - Commits with helpful messages (will hlep us with bugs later)
  - **No git push -f**
+
+Steps for commiting:
+
+```
+git add .
+git commit -m "bla bla"
+git pull
+git push
+```
