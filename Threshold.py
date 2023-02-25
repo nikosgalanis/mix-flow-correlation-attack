@@ -33,10 +33,10 @@ def threshold(n, m):
     Function to read messages from input file and output messages within a threshold of m
     """
     with open('input.txt', 'r') as input_file, open('output.txt', 'w') as output_file:
-        output_file.write(f'\nBATCH 0 - Threshold\n')
         max_time = datetime.min  # initialize with minimum datetime value
         count = 0  # initialize counter
         batch = 1  # initialize batch number
+        output_file.write(f'\nBATCH 0 - Threshold\n')
         for line in sorted(input_file, key=lambda x: datetime.strptime(x.strip().split('\t')[2], '%Y-%m-%d %H:%M:%S')):
             # split line into fields and convert time to datetime object
             src, dest, time_str, msg = line.strip().split('\t')
