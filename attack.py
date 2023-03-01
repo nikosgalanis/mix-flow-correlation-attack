@@ -19,46 +19,56 @@ import random
 from datetime import datetime, timedelta
 
 
-
-
 def dataCollection():
+    result_file = open('output.txt', 'r')
 
-	result_file = open('output.txt', 'r')
+    lines = (line.strip().split('\t') for line in result_file)
 
-	lines = (line.strip().split('\t') for line in result_file)
+    # dictionary of lists. ex A[192.32....] = []
+    A = {}
+    B = {}
 
-	# dictionary of lists. ex A[192.32....] = []
-	A = {}
-	B = {}
+    # for [src, dest, in_time_str, _, out_time_str, _] in lines:
+    for line in lines:
+        src = line[0]
+        if src != '':
+            dest = line[1]
+            in_time_str = line[2]
+            #msg = line[3]
+            out_time_str = line[4]
+            #mix_type = line[5]
+            A.setdefault(src, []).append(in_time_str)
+            B.setdefault(dest, []).append(out_time_str)
 
-	for [src, dest, in_time_str, _, out_time_str, _] in lines:
-		A.setdefault(src, []).append(in_time_str)
-		B.setdefault(dest, []).append(out_time_str)
-	
-	return A, B
+    return A, B
 
-dataCollection()
+
+x = dataCollection()
+print(x[0])
+print("")
+print(x[1])
+
 
 def flowPatternExtraction():
-	# TODO: Implement Flow Pattern Extraction
-	pass
+    # TODO: Implement Flow Pattern Extraction
+    pass
 
 
 def dist_mutual_info():
-	# TODO: Implement Mutual Information distance function
-	pass
+    # TODO: Implement Mutual Information distance function
+    pass
 
 
 def dist_fsb_matched_filter():
-	# TODO: Implement Frequency-Spectrum-Based matched filter distance function
-	pass
+    # TODO: Implement Frequency-Spectrum-Based matched filter distance function
+    pass
 
 
 def distanceFunctionSelection():
-	# TODO: Implement Distance Function Selection
-	pass
+    # TODO: Implement Distance Function Selection
+    pass
 
 
 def flowCorrelationAttack():
-	# TODO: Implement Attack
-	pass
+    # TODO: Implement Attack
+    pass
