@@ -8,11 +8,14 @@ letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
 n_nodes = 20
 
+in_nodes_ip = []
 out_nodes_ip = []
 
 for i in range(20):
-    out_nodes_ip.append(socket.inet_ntoa(struct.pack('>I', random.randint(1, 0xffffffff))))
+    in_nodes_ip.append(socket.inet_ntoa(struct.pack('>I', random.randint(1, 0xffffffff))))
 
+for i in range(20):
+    out_nodes_ip.append(socket.inet_ntoa(struct.pack('>I', random.randint(1, 0xffffffff))))
 
 def message_maker():
     """
@@ -23,7 +26,7 @@ def message_maker():
     - exact time the message was sent
     """
     # randomize the scr and destination IP
-    src = socket.inet_ntoa(struct.pack('>I', random.randint(1, 0xffffffff)))
+    src = in_nodes_ip[random.randint(0, 19)]
     dest = out_nodes_ip[random.randint(0, 19)]
     # randomize the message
     msg = ''.join(random.choice(letters) for i in range(10))

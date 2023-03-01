@@ -14,34 +14,51 @@ Step 3: Distance Function Selection
 Step 4: Flow Correlation
 -Selecting the OUTPUT link whose traffic has the minimum distance to INPUT flow pattern vector
 """
+import struct
+import random
+from datetime import datetime, timedelta
+
 
 
 
 def dataCollection():
-    # TODO: Implement Data Collection
-    pass
 
+	result_file = open('output.txt', 'r')
+
+	lines = (line.strip().split('\t') for line in result_file)
+
+	# dictionary of lists. ex A[192.32....] = []
+	A = {}
+	B = {}
+
+	for [src, dest, in_time_str, _, out_time_str, _] in lines:
+		A.setdefault(src, []).append(in_time_str)
+		B.setdefault(dest, []).append(out_time_str)
+	
+	return A, B
+
+dataCollection()
 
 def flowPatternExtraction():
-    # TODO: Implement Flow Pattern Extraction
-    pass
+	# TODO: Implement Flow Pattern Extraction
+	pass
 
 
 def dist_mutual_info():
-    # TODO: Implement Mutual Information distance function
-    pass
+	# TODO: Implement Mutual Information distance function
+	pass
 
 
 def dist_fsb_matched_filter():
-    # TODO: Implement Frequency-Spectrum-Based matched filter distance function
-    pass
+	# TODO: Implement Frequency-Spectrum-Based matched filter distance function
+	pass
 
 
 def distanceFunctionSelection():
-    # TODO: Implement Distance Function Selection
-    pass
+	# TODO: Implement Distance Function Selection
+	pass
 
 
 def flowCorrelationAttack():
-    # TODO: Implement Attack
-    pass
+	# TODO: Implement Attack
+	pass
