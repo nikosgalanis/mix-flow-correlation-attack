@@ -63,7 +63,7 @@ def timed(n, t):
                 # write all messages in the buffer to the output file
                 if msgs:
                     # output_file.write(f'\nBATCH {batch} - Timed\n')
-                    output_file.write(f'\n\n')
+                    output_file.write(f'\n')
                     for m in msgs:
                         output_file.write(f'{m[0]}\t{m[1]}\t{m[2]}\t{m[3]}\t{end_time}\t{"timed"}\n')
                     batch += 1
@@ -107,6 +107,6 @@ def mix(n, t_values):
 
 
 if __name__ == '__main__':
-    n = 100
-    t_values = [10]
+    n = 300
+    t_values = [5]
     mix(n, t_values)
