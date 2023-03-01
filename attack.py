@@ -27,6 +27,9 @@ def dataCollection():
     # dictionary of lists. ex A[192.32....] = []
     A = {}
     B = {}
+    input_batch = []
+    output_batch = []
+    new_batch = True
 
     # for [src, dest, in_time_str, _, out_time_str, _] in lines:
     for line in lines:
@@ -34,19 +37,24 @@ def dataCollection():
         if src != '':
             dest = line[1]
             in_time_str = line[2]
-            #msg = line[3]
             out_time_str = line[4]
-            #mix_type = line[5]
             A.setdefault(src, []).append(in_time_str)
             B.setdefault(dest, []).append(out_time_str)
+            if new_batch:
+                input_batch.append(A)
+                A = {}
+                output_batch.append(B)
+                B = {}
+                new_batch = False
+        else:
+            new_batch = True
 
-    return A, B
+    return input_batch, output_batch
 
 
 x = dataCollection()
-print(x[0])
-print("")
-print(x[1])
+for batch in x:
+    print(batch)
 
 
 def flowPatternExtraction():
