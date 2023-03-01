@@ -6,6 +6,13 @@ from datetime import datetime, timedelta
 # define the characters that can be used in the message content
 letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
+n_nodes = 20
+
+out_nodes_ip = []
+
+for i in range(20):
+    out_nodes_ip.append(socket.inet_ntoa(struct.pack('>I', random.randint(1, 0xffffffff))))
+
 
 def message_maker():
     """
@@ -17,7 +24,7 @@ def message_maker():
     """
     # randomize the scr and destination IP
     src = socket.inet_ntoa(struct.pack('>I', random.randint(1, 0xffffffff)))
-    dest = socket.inet_ntoa(struct.pack('>I', random.randint(1, 0xffffffff)))
+    dest = out_nodes_ip[random.randint(0, 19)]
     # randomize the message
     msg = ''.join(random.choice(letters) for i in range(10))
     # randomize the time that the message was sent
@@ -54,7 +61,8 @@ def threshold(n, m):
                 # write batch separator and messages when count is a multiple of m (Change Values)
                 if count % m == 0:
                     # compute the output time, i.e the input time of the last message
-                    output_file.write(f'\nBATCH {batch} - Threshold\n')
+                    # output_file.write(f'\nBATCH {batch} - Threshold\n')
+                    output_file.write(f'\n')
                     # write the messages along with the ending time
                     for msg in msgs:
                         output_file.write(msg + str(end_time) + '\tthreshold\n')
