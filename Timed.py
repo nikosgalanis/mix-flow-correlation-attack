@@ -35,7 +35,7 @@ def message_maker():
     # randomize the scr and destination IP
     src = in_nodes_ip[random.randint(0, n_nodes - 1)]
     prob = random.random()
-    if prob < 0.7:
+    if prob < 0.3:
         dest = dests[src]
     else:
         dest = out_nodes_ip[random.randint(0, n_nodes - 1)]

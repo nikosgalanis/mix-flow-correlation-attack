@@ -236,7 +236,7 @@ for every i:
 """
 
 def dist_mutual_info(X,Y, in_ips, out_ips):
-    # TODO: Implement Mutual Information distance function
+    # TODO: change to more python-like way
     n_nodes = X.shape[0]
     similar_nodes = {}
     for i in range(n_nodes):
