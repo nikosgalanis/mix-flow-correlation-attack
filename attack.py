@@ -17,6 +17,8 @@ Step 4: Flow Correlation
 import struct
 import random
 from datetime import datetime, timedelta
+import numpy as np
+from sklearn import metrics
 
 
 with open("output.txt", 'r') as f:
@@ -98,7 +100,6 @@ def dataCollection():
 in_batch, out_batch = dataCollection()
 
 
-# print(out_batch)
 
 
 
@@ -119,10 +120,13 @@ def flowPatternExtraction(in_batch, out_batch):
 
     X = []
     Y = []
+    in_ips = []
+    out_ips = []
 
     if mix_type == "threshold":
         
         for in_key in in_j:
+            in_ips.append(in_key)
             batches = in_batch[in_key]
             end_time_prev = first_src_time
             x_j = []
@@ -152,6 +156,7 @@ def flowPatternExtraction(in_batch, out_batch):
 
 
         for out_key in out_j:
+            out_ips.append(out_key)
             batches = out_batch[out_key]
             end_time_prev = first_dest_time
             y_j = []
@@ -176,6 +181,7 @@ def flowPatternExtraction(in_batch, out_batch):
     if mix_type == "timed":
         
         for in_key in in_j:
+            in_ips.append(in_key)
             batches = in_batch[in_key]
             x_j = []
             for batch in batches:
@@ -194,6 +200,7 @@ def flowPatternExtraction(in_batch, out_batch):
 
 
         for out_key in out_j:
+            out_ips.append(out_key)
             batches = out_batch[out_key]
             y_j = []
             for batch in batches:
@@ -208,16 +215,73 @@ def flowPatternExtraction(in_batch, out_batch):
             
             Y.append(y_j)
 
-    return X, Y
+    X_array = np.asarray(X)
+    Y_array = np.asarray(Y)
 
-X, Y = flowPatternExtraction(in_batch, out_batch)
+    return X_array, Y_array, in_ips, out_ips
 
-print(len(X[1]))
+X, Y, in_ips, out_ips = flowPatternExtraction(in_batch, out_batch)
 
+print(X[1].shape)
+print(Y.shape)
 
-def dist_mutual_info():
+"""
+X: alice, bob, charlie
+
+Y: diana, elen, frank, g, i, k, l , m, n
+
+for every i:
+    find the j that they are communicating
+
+"""
+
+def dist_mutual_info(X,Y, in_ips, out_ips):
     # TODO: Implement Mutual Information distance function
-    pass
+    n_nodes = X.shape[0]
+    similar_nodes = {}
+    for i in range(n_nodes):
+        min_value = 1000000000
+        for j in range(n_nodes):
+            res = 1 / metrics.mutual_info_score(X[i], Y[j])
+            if res < min_value:
+                similar_nodes[in_ips[i]] = out_ips[j]
+                min_value = res
+            
+
+    # print(similar_nodes)
+    # print(similar_nodes['254.24.48.115'])
+    return similar_nodes
+
+pred_res = dist_mutual_info(X,Y, in_ips, out_ips)
+
+from collections import defaultdict
+
+
+def extract_true_flow_corellation():
+    most_frequent_dest = defaultdict(lambda: defaultdict(int))
+
+    with open("output.txt", "r") as f:
+        for line in f:
+            line = line.split('\t')
+            if (line != ['\n']):
+                src_ip, dest_ip = line[0], line[1]
+                most_frequent_dest[src_ip][dest_ip] += 1
+
+    # Create a dictionary that maps each source IP to the most frequent destination IP it communicates with
+    result = {}
+    for src_ip, dest_ips in most_frequent_dest.items():
+        most_frequent_dest_ip = max(dest_ips, key=dest_ips.get)
+        result[src_ip] = most_frequent_dest_ip
+
+    # Print the result
+    return result
+
+    
+
+
+extract_true_flow_corellation()
+
+
 
 
 def dist_fsb_matched_filter():
@@ -230,6 +294,17 @@ def distanceFunctionSelection():
     pass
 
 
-def flowCorrelationAttack():
-    # TODO: Implement Attack
-    pass
+true_res = extract_true_flow_corellation()
+
+print(pred_res)
+print(true_res)
+def flowCorrelationAttack(pred_res, true_res):
+    correct = 0
+    for i in pred_res.keys():
+        if pred_res[i] == true_res[i]:
+            correct += 1
+    print(len(pred_res.keys()))
+    print(correct / len(pred_res.keys()))
+
+
+flowCorrelationAttack(pred_res, true_res)
