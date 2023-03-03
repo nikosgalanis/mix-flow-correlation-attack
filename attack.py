@@ -235,19 +235,11 @@ for every i:
 
 """
 
-def dist_mutual_info(X,Y, in_ips, out_ips):
-    # TODO: change to more python-like way
-    n_nodes = X.shape[0]
+def dist_mutual_info(X, Y, in_ips, out_ips):
     similar_nodes = {}
-    for i in range(n_nodes):
-        min_value = 1000000000
-        for j in range(n_nodes):
-            res = 1 / metrics.mutual_info_score(X[i], Y[j])
-            if res < min_value:
-                similar_nodes[in_ips[i]] = out_ips[j]
-                min_value = res
-            
-
+    for i, in_ip in enumerate(in_ips):
+        j, _ = min(enumerate(Y), key=lambda jy: 1 / metrics.mutual_info_score(X[i], jy[1]))
+        similar_nodes[in_ip] = out_ips[j]
     # print(similar_nodes)
     # print(similar_nodes['254.24.48.115'])
     return similar_nodes
