@@ -288,8 +288,7 @@ def distanceFunctionSelection():
 
 true_res = extract_true_flow_corellation()
 
-print(pred_res)
-print(true_res)
+
 def flowCorrelationAttack(pred_res, true_res):
     correct = 0
     for i in pred_res.keys():
