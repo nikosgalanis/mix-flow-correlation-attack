@@ -3,54 +3,7 @@ import struct
 import random
 from datetime import datetime, timedelta
 
-
-def setup(n_nodes):
-
-
-    in_nodes_ip = []
-    out_nodes_ip = []
-
-    for i in range(n_nodes):
-        in_nodes_ip.append(socket.inet_ntoa(struct.pack('>I', random.randint(1, 0xffffffff))))
-
-    for i in range(n_nodes):
-        out_nodes_ip.append(socket.inet_ntoa(struct.pack('>I', random.randint(1, 0xffffffff))))
-
-    dests = {}
-
-    for i in in_nodes_ip:
-        dests[i] = out_nodes_ip[random.randint(0, n_nodes - 1)]
-
-    return (in_nodes_ip, out_nodes_ip, dests)
-
-def message_maker(n_nodes, config, random_time):
-    """
-    Function used to generate a random packet with the following fields:
-    - source IP
-    - destination IP
-    - message content
-    - exact time the message was sent
-    """
-    (in_nodes_ip, out_nodes_ip, dests) = config
-    # define the characters that can be used in the message content
-    letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-    # randomize the scr and destination IP
-    src = in_nodes_ip[random.randint(0, n_nodes - 1)]
-    prob = random.random()
-    if prob < 0.15:
-        dest = dests[src]
-    else:
-        dest = out_nodes_ip[random.randint(0, n_nodes - 1)]
-
-    # randomize the message
-    msg = ''.join(random.choice(letters) for i in range(10))
-    # randomize the time that the message was sent
-    now = datetime.now() + timedelta(seconds=random.randint(1, random_time))
-    msg_time = now.strftime('%Y-%m-%d %H:%M:%S')
-    # create the packet as a tuple of the above info and return it
-    packet = (src, dest, msg_time, msg)
-    return packet
-
+import GenerateMessages
 
 def timed(n, t):
     """
@@ -92,31 +45,12 @@ def timed(n, t):
                 output_file.write(f'{m[0]}\t{m[1]}\t{m[2]}\t{m[3]}\t{end_time}\n')
 
 
-def generate_input(n_messages, n_nodes, config, random_time):
-    """
-    Function to generate n random messages, sort them by time and write them to input file
-    """
-    (in_nodes_ip, out_nodes_ip, dests) = config
-    packets = []
-    for i in range(n_messages):
-        packet = message_maker(n_nodes, config, random_time)
-        packets.append(packet)
-
-    # sort packets by time
-    packets = sorted(packets, key=lambda packet: packet[2])
-
-    # write sorted packets to input file
-    with open('input.txt', 'w') as input_file:
-        for packet in packets:
-            input_file.write(f'{packet[0]}\t{packet[1]}\t{packet[2]}\t{packet[3]}\n')
-
-
 def mix(n_messages, n_nodes, random_time, time_window):
     """
     Function to generate input messages and call the timed function with various time thresholds
     """
-    config = setup(n_nodes)
-    generate_input(n_messages, n_nodes, config, random_time)
+    config = GenerateMessages.setup(n_nodes)
+    GenerateMessages.generate_input(n_messages, n_nodes, config, random_time, fixed_prob)
 
     timed(n_messages, time_window)
 
@@ -126,5 +60,6 @@ n_nodes = 20
 n_messages = 10000
 time_window = 10
 random_time = 10000
+fixed_prob = 0.15
 
 mix(n_messages, n_nodes, random_time, time_window)

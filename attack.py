@@ -19,7 +19,7 @@ import random
 from datetime import datetime, timedelta
 import numpy as np
 from sklearn import metrics
-
+from collections import defaultdict
 
 with open("output.txt", 'r') as f:
     lines = list(map(lambda x: x.split('\t'), f.readlines()))
@@ -140,10 +140,7 @@ def flowPatternExtraction(in_batch, out_batch):
                     end_time = datetime.strptime(end_time_str, '%Y-%m-%d %H:%M:%S')
 
                     delta_time = (end_time - end_time_prev).total_seconds()
-                    print(end_time)
-                    print(end_time_prev)
-                    print (delta_time)
-                    print("\n\n")
+
                     x_j_k = n_packs / delta_time
 
                     end_time_prev = end_time
@@ -222,9 +219,6 @@ def flowPatternExtraction(in_batch, out_batch):
 
 X, Y, in_ips, out_ips = flowPatternExtraction(in_batch, out_batch)
 
-print(X[1].shape)
-print(Y.shape)
-
 """
 X: alice, bob, charlie
 
@@ -240,13 +234,10 @@ def dist_mutual_info(X, Y, in_ips, out_ips):
     for i, in_ip in enumerate(in_ips):
         j, _ = min(enumerate(Y), key=lambda jy: 1 / metrics.mutual_info_score(X[i], jy[1]))
         similar_nodes[in_ip] = out_ips[j]
-    # print(similar_nodes)
-    # print(similar_nodes['254.24.48.115'])
+
     return similar_nodes
 
 pred_res = dist_mutual_info(X,Y, in_ips, out_ips)
-
-from collections import defaultdict
 
 
 def extract_true_flow_corellation():
@@ -270,19 +261,8 @@ def extract_true_flow_corellation():
 
     
 
-
-extract_true_flow_corellation()
-
-
-
-
 def dist_fsb_matched_filter():
     # TODO: Implement Frequency-Spectrum-Based matched filter distance function
-    pass
-
-
-def distanceFunctionSelection():
-    # TODO: Implement Distance Function Selection
     pass
 
 
@@ -294,8 +274,26 @@ def flowCorrelationAttack(pred_res, true_res):
     for i in pred_res.keys():
         if pred_res[i] == true_res[i]:
             correct += 1
-    print(len(pred_res.keys()))
     print(correct / len(pred_res.keys()))
 
+    return correct / len(pred_res.keys())
 
 flowCorrelationAttack(pred_res, true_res)
+
+
+def attack(distance_func):
+    # 1st step: collect the data from the mix traffic
+    in_batch, out_batch = dataCollection()
+    # 2nd step: create the flow pattern vectors
+    X, Y, in_ips, out_ips = flowPatternExtraction(in_batch, out_batch)
+    # 3rd step: calculate the distance between the X and Y vectors
+    if distance_func == 'mutual_info':
+        pred_res = dist_mutual_info(X,Y, in_ips, out_ips)
+    else:
+        pred_res = dist_fsb_matched_filter()
+    # compute the true values by directly looking at the information flow, to extract metrics
+    true_res = extract_true_flow_corellation()
+    # operate the attack and extract the detection rate metric
+    det_rate = flowCorrelationAttack(pred_res, true_res)
+    # return the attack success
+    return det_rate
