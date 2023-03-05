@@ -1,3 +1,6 @@
+#The output is sorted which might be useful for our case since we need to timing analysis, but it defeats the purpose of the algorithm since it 
+#supposed to output m randomly chosen packets if n=m+f
+
 import socket
 import struct
 import random
