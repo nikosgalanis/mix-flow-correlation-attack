@@ -1,17 +1,12 @@
-import socket
-import struct
-import random
 from datetime import datetime, timedelta
 
 import GenerateMessages
 
 
-def ThresholdOrTimed(n_messages, n_nodes, threshold, time_window, fixed_prob):
+def ThresholdOrTimed(threshold, time_window):
     """
     Function to generate input messages and output messages within a time threshold of t or n >= m packets threshold
     """
-    config = GenerateMessages.setup(n_nodes)
-    GenerateMessages.generate_input(n_messages, n_nodes, config, 1, fixed_prob)
 
     # Initialize variables
     batch_num = 1
@@ -42,7 +37,8 @@ def ThresholdOrTimed(n_messages, n_nodes, threshold, time_window, fixed_prob):
                     if msgs:
                         output_file.write(f'\nBATCH {batch_num} - Threshold or Timed Mix\n')
                         for m in msgs:
-                            output_file.write(f'{m[0]}\t{m[1]}\t{m[2]}\t{m[3]}\t{end_time}\t{"threshold" if threshold_count == threshold else "timed"}\n')
+                            output_file.write(
+                                f'{m[0]}\t{m[1]}\t{m[2]}\t{m[3]}\t{end_time}\t{"threshold" if threshold_count == threshold else "timed"}\n')
                         batch_num += 1
                         msgs = []
                         threshold_count = 0
@@ -66,6 +62,7 @@ def ThresholdOrTimed(n_messages, n_nodes, threshold, time_window, fixed_prob):
             for m in msgs:
                 output_file.write(f'{m[0]}\t{m[1]}\t{m[2]}\t{m[3]}\t{end_time}\t{"timed"}\n')
 
+
 def mix(n_messages, n_nodes, random_time, time_window):
     """
     Function to generate input messages and call the timed function with various time thresholds
@@ -73,8 +70,7 @@ def mix(n_messages, n_nodes, random_time, time_window):
     config = GenerateMessages.setup(n_nodes)
     GenerateMessages.generate_input(n_messages, n_nodes, config, random_time, fixed_prob)
 
-    ThresholdOrTimed(n_messages, n_nodes, threshold, time_window, fixed_prob)
-
+    ThresholdOrTimed(threshold, time_window)
 
 
 n_nodes = 20
