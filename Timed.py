@@ -1,9 +1,7 @@
-import socket
-import struct
-import random
 from datetime import datetime, timedelta
 
 import GenerateMessages
+
 
 def timed(n, t):
     """
@@ -40,7 +38,7 @@ def timed(n, t):
                 msgs.append((src, dest, time.strftime('%Y-%m-%d %H:%M:%S'), msg))
         # write remaining messages as last batch if not empty
         if msgs:
-            #output_file.write(f'\nBATCH {batch} - Timed\n')
+            # output_file.write(f'\nBATCH {batch} - Timed\n')
             for m in msgs:
                 output_file.write(f'{m[0]}\t{m[1]}\t{m[2]}\t{m[3]}\t{end_time}\n')
 
@@ -53,7 +51,6 @@ def mix(n_messages, n_nodes, random_time, time_window):
     GenerateMessages.generate_input(n_messages, n_nodes, config, random_time, fixed_prob)
 
     timed(n_messages, time_window)
-
 
 
 n_nodes = 20
