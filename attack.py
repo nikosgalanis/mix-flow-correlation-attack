@@ -14,11 +14,14 @@ Step 3: Distance Function Selection
 Step 4: Flow Correlation
 -Selecting the OUTPUT link whose traffic has the minimum distance to INPUT flow pattern vector
 """
+import math
 import struct
 import random
 from datetime import datetime, timedelta
 import numpy as np
 from sklearn import metrics
+import pywt
+from scipy import signal, fftpack
 from collections import defaultdict
 
 with open("output.txt", 'r') as f:
@@ -29,6 +32,7 @@ first_src_time = datetime.strptime(lines[1][2], '%Y-%m-%d %H:%M:%S') - timedelta
 first_dest_time = datetime.strptime(lines[1][4], '%Y-%m-%d %H:%M:%S') - timedelta(seconds=1)
 
 timed_window = 5
+
 
 def dataCollection():
     # Read lines 
@@ -97,11 +101,8 @@ def dataCollection():
 
     return A_mapping, B_mapping
 
+
 in_batch, out_batch = dataCollection()
-
-
-
-
 
 """
     in_ips: {src_ip: [batch_0, batch_1,..., batch_n]}
@@ -111,6 +112,7 @@ in_batch, out_batch = dataCollection()
     k = batch_no
     X: [X0,1, X0,2 ... ] [X1,1 ... ] []
 """
+
 
 def flowPatternExtraction(in_batch, out_batch):
     in_j = in_batch.keys()
@@ -124,7 +126,7 @@ def flowPatternExtraction(in_batch, out_batch):
     out_ips = []
 
     if mix_type == "threshold":
-        
+
         for in_key in in_j:
             in_ips.append(in_key)
             batches = in_batch[in_key]
@@ -144,13 +146,10 @@ def flowPatternExtraction(in_batch, out_batch):
                     x_j_k = n_packs / delta_time
 
                     end_time_prev = end_time
-                
+
                 x_j.append(x_j_k)
-            
+
             X.append(x_j)
-
-                
-
 
         for out_key in out_j:
             out_ips.append(out_key)
@@ -165,18 +164,18 @@ def flowPatternExtraction(in_batch, out_batch):
                     # it doesnt matter, all of them have same out time
                     end_time_str = batch[0]
                     end_time = datetime.strptime(end_time_str, '%Y-%m-%d %H:%M:%S')
-                    
+
                     delta_time = (end_time - end_time_prev).total_seconds()
                     y_j_k = n_packs / delta_time
 
                     end_time_prev = end_time
-                    
+
                 y_j.append(y_j_k)
-            
+
             Y.append(y_j)
 
     if mix_type == "timed":
-        
+
         for in_key in in_j:
             in_ips.append(in_key)
             batches = in_batch[in_key]
@@ -188,13 +187,10 @@ def flowPatternExtraction(in_batch, out_batch):
                 else:
                     delta_time = timed_window
                     x_j_k = n_packs / delta_time
-                
+
                 x_j.append(x_j_k)
-            
+
             X.append(x_j)
-
-                
-
 
         for out_key in out_j:
             out_ips.append(out_key)
@@ -207,15 +203,16 @@ def flowPatternExtraction(in_batch, out_batch):
                 else:
                     delta_time = timed_window
                     y_j_k = n_packs / delta_time
-                    
+
                 y_j.append(y_j_k)
-            
+
             Y.append(y_j)
 
     X_array = np.asarray(X)
     Y_array = np.asarray(Y)
 
     return X_array, Y_array, in_ips, out_ips
+
 
 X, Y, in_ips, out_ips = flowPatternExtraction(in_batch, out_batch)
 
@@ -229,6 +226,7 @@ for every i:
 
 """
 
+
 def dist_mutual_info(X, Y, in_ips, out_ips):
     similar_nodes = {}
     for i, in_ip in enumerate(in_ips):
@@ -237,10 +235,34 @@ def dist_mutual_info(X, Y, in_ips, out_ips):
 
     return similar_nodes
 
-pred_res = dist_mutual_info(X,Y, in_ips, out_ips)
+
+def dist_fsb_matched_filter(X, Y, in_ips, out_ips):
+    # TODO: Problem -> Does not calculate distance correctly (pred/true flow extraction changes each run)
+    similar_nodes = {}
+    n_nodes = X.shape[0]
+    for i in range(n_nodes):
+        min_value = 10
+        x_freq = np.fft.fft(X[i])
+        for j in range(n_nodes):
+            y_freq = np.fft.fft(Y[j])
+
+            inner_x_y = np.inner(x_freq, y_freq)
+
+            inner_y_y = np.inner(y_freq, y_freq).real
+            sqr_inner_y_y = math.sqrt(inner_y_y).real
+
+            if inner_x_y == 0:
+                continue
+
+            corr = sqr_inner_y_y / inner_x_y
+            if corr.real < min_value:
+                min_value = corr.real
+                similar_nodes[in_ips[i]] = out_ips[j]
+
+    return similar_nodes
 
 
-def extract_true_flow_corellation():
+def extract_true_flow_correlation():
     most_frequent_dest = defaultdict(lambda: defaultdict(int))
 
     with open("output.txt", "r") as f:
@@ -259,15 +281,6 @@ def extract_true_flow_corellation():
     # Print the result
     return result
 
-    
-
-def dist_fsb_matched_filter():
-    # TODO: Implement Frequency-Spectrum-Based matched filter distance function
-    pass
-
-
-true_res = extract_true_flow_corellation()
-
 
 def flowCorrelationAttack(pred_res, true_res):
     correct = 0
@@ -278,8 +291,6 @@ def flowCorrelationAttack(pred_res, true_res):
 
     return correct / len(pred_res.keys())
 
-flowCorrelationAttack(pred_res, true_res)
-
 
 def attack(distance_func):
     # 1st step: collect the data from the mix traffic
@@ -288,12 +299,18 @@ def attack(distance_func):
     X, Y, in_ips, out_ips = flowPatternExtraction(in_batch, out_batch)
     # 3rd step: calculate the distance between the X and Y vectors
     if distance_func == 'mutual_info':
-        pred_res = dist_mutual_info(X,Y, in_ips, out_ips)
+        pred_res = dist_mutual_info(X, Y, in_ips, out_ips)
     else:
-        pred_res = dist_fsb_matched_filter()
+        pred_res = dist_fsb_matched_filter(X, Y, in_ips, out_ips)
+    print(pred_res)
+    print("\n")
     # compute the true values by directly looking at the information flow, to extract metrics
-    true_res = extract_true_flow_corellation()
+    true_res = extract_true_flow_correlation()
+    print(true_res)
     # operate the attack and extract the detection rate metric
     det_rate = flowCorrelationAttack(pred_res, true_res)
     # return the attack success
     return det_rate
+
+
+print(attack("oop"))
