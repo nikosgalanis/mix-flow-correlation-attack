@@ -19,6 +19,7 @@ import struct
 import random
 from datetime import datetime, timedelta
 import numpy as np
+import scipy.fft
 from sklearn import metrics
 import pywt
 from scipy import signal, fftpack
@@ -242,13 +243,13 @@ def dist_fsb_matched_filter(X, Y, in_ips, out_ips):
     n_nodes = X.shape[0]
     for i in range(n_nodes):
         min_value = 10
-        x_freq = np.fft.fft(X[i])
+        x_freq = scipy.fft.fft(X[i])
         for j in range(n_nodes):
-            y_freq = np.fft.fft(Y[j])
+            y_freq = scipy.fft.fft(Y[j])
 
-            inner_x_y = np.inner(x_freq, y_freq)
+            inner_x_y = np.vdot(x_freq, y_freq).real
 
-            inner_y_y = np.inner(y_freq, y_freq).real
+            inner_y_y = np.vdot(y_freq, y_freq).real
             sqr_inner_y_y = math.sqrt(inner_y_y).real
 
             if inner_x_y == 0:
@@ -302,11 +303,8 @@ def attack(distance_func):
         pred_res = dist_mutual_info(X, Y, in_ips, out_ips)
     else:
         pred_res = dist_fsb_matched_filter(X, Y, in_ips, out_ips)
-    print(pred_res)
-    print("\n")
     # compute the true values by directly looking at the information flow, to extract metrics
     true_res = extract_true_flow_correlation()
-    print(true_res)
     # operate the attack and extract the detection rate metric
     det_rate = flowCorrelationAttack(pred_res, true_res)
     # return the attack success
