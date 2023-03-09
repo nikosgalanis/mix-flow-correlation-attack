@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import random
 import GenerateMessages
 
 
@@ -30,6 +31,8 @@ def threshold(n, m):
                     # compute the output time, i.e the input time of the last message
                     # output_file.write(f'\nBATCH {batch} - Threshold\n')
                     output_file.write(f'\n')
+                    # shuffle the output order
+                    random.shuffle(msgs)
                     # write the messages along with the ending time
                     for msg in msgs:
                         output_file.write(msg + str(end_time) + '\tthreshold\n')
@@ -37,7 +40,7 @@ def threshold(n, m):
                     batch += 1
 
 
-def mix(n_messages, n_nodes, random_time, thres):
+def mix(n_messages, n_nodes, random_time, thres, fixed_prob):
     """
     Function to generate input messages and call the timed function with various time thresholds
     """
@@ -45,12 +48,3 @@ def mix(n_messages, n_nodes, random_time, thres):
     GenerateMessages.generate_input(n_messages, n_nodes, config, random_time, fixed_prob)
 
     threshold(n_messages, thres)
-
-
-n_nodes = 20
-n_messages = 10000
-thres = 10
-random_time = 10000
-fixed_prob = 0.15
-
-mix(n_messages, n_nodes, random_time, thres)

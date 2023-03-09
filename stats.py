@@ -3,14 +3,86 @@ Create stats and graphs for the Flow-Corellation Attack
 """
 import Timed
 import Threshold
+import ThresholdOrTimed
+import ThresholdandTimed
+import ThresholdPool
+import TimedDynamicPool
+import TimedPool
+
 import attack
-res = input("Select type of mix: A for Timed | B for Threshold\n").upper()
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+from tqdm import tqdm
 
-# Timed mix
-if res == 'A':
-    n_nodes = 6
-    n_messages = 100
-    time_window = 5
-    random_time = 10
+# import warnings
+# warnings.filterwarnings("ignore")
 
-    Timed.mix(n_messages, n_nodes, random_time, time_window)
+# res = input("Select type of mix: A for Timed | B for Threshold\n").upper()
+
+
+
+n_messages = [i for i in range(600, 20000, 600)]
+print(n_messages)
+    
+n_nodes = 20
+time_window = 5
+threshold = 10
+fixed_prob = 0.1
+f = 5
+p = 0.5
+
+dist_func = "tou_mike"
+
+accs = [[], [], [], [], [], [], []]
+accs_threshold = []
+
+for n_mess in tqdm(n_messages):
+    random_time = 2 * n_mess
+    # Timed
+    Timed.mix(n_mess, n_nodes, random_time, time_window,fixed_prob)
+    res = attack.attack(dist_func, time_window)
+    accs[0].append(res)
+    
+    # Threshold
+    Threshold.mix(n_mess, n_nodes, random_time, threshold, fixed_prob)
+    res = attack.attack(dist_func, time_window)
+    accs[1].append(res)
+
+    # TimedPool
+    TimedPool.mix(n_mess, n_nodes, random_time, threshold, fixed_prob, f, time_window)
+    res = attack.attack(dist_func, time_window)
+    accs[2].append(res)    
+
+    # TimedDynamicPool
+    TimedDynamicPool.mix(n_mess, n_nodes, random_time, threshold, fixed_prob, f, time_window, p)
+    res = attack.attack(dist_func, time_window)
+    accs[3].append(res)    
+    
+    # ThresholdOrTimed
+    ThresholdOrTimed.mix(n_mess, n_nodes, random_time, time_window, fixed_prob, threshold)
+    res = attack.attack(dist_func, time_window)
+    accs[4].append(res)    
+    
+    # ThresholdandTimed
+    ThresholdandTimed.mix(n_mess, n_nodes, random_time, threshold, fixed_prob, time_window)
+    res = attack.attack(dist_func, time_window)
+    accs[5].append(res)    
+    
+    # ThresholdPool
+    ThresholdPool.mix(n_mess, n_nodes, random_time, threshold, fixed_prob, f)
+    res = attack.attack(dist_func, time_window)
+    accs[6].append(res)    
+
+# threshold
+# plt.plot(n_messages, accs[0], label='timed', marker='o')
+plt.plot(n_messages, accs[1], label='threshold', marker='o')
+plt.plot(n_messages, accs[2], label='timedpool', marker='o')
+plt.plot(n_messages, accs[3], label='TimedDynamicPool', marker='o')
+plt.plot(n_messages, accs[4], label='ThresholdOrTimed', marker='o')
+plt.plot(n_messages, accs[5], label='ThresholdandTimed', marker='o')
+plt.plot(n_messages, accs[6], label='ThresholdPool', marker='o')
+
+plt.xlabel("Sample Size (Packets)", fontsize=15)
+plt.ylabel("Detection Rate", fontsize=15)
+plt.legend()
+plt.show()

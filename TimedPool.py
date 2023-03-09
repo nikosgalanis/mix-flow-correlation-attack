@@ -35,7 +35,7 @@ def timedpool(n: int, m: int, f: int, t: int) -> None:
                     timer = datetime.now() + timedelta(seconds=t)
                     while True:
                         # check if timer has timed out
-                        if datetime.now() >= timer:
+                        if time >= timer:
                             # send packets only if pool has more than f packets
                             if len(pool) > f:
                                 # send n-f random packets from pool
@@ -50,15 +50,17 @@ def timedpool(n: int, m: int, f: int, t: int) -> None:
                         else:
                             # wait for timer to time out
                             continue
+                    # shuffle the output order
+                    random.shuffle(msgs)
+                    output_file.write(f'\n')
                     # write batch separator and messages
-                    output_file.write(f'\nBATCH {i // m} - Timed Pool Mix\n')
                     for msg in msgs:
                         output_file.write(msg + str(end_time) + '\ttimedpool\n')
                     msgs = []
                     count -= n - f
 
 
-def mix(n_messages, n_nodes, random_time, thres, f, t):
+def mix(n_messages, n_nodes, random_time, thres, fixed_prob, f, t):
     """
     Function to generate input messages and call the timedpool function with various parameters
     """
@@ -68,12 +70,12 @@ def mix(n_messages, n_nodes, random_time, thres, f, t):
     timedpool(n_messages, thres, f, t)
 
 
-n_nodes = 20
-n_messages = 100
-thres = 10
-f = 5
-t = 5
-random_time = 10000
-fixed_prob = 0.15
+# n_nodes = 20
+# n_messages = 100
+# thres = 10
+# f = 5
+# t = 5
+# random_time = 10000
+# fixed_prob = 0.15
 
-mix(n_messages, n_nodes, random_time, thres, f, t)
+# mix(n_messages, n_nodes, random_time, thres,fixed_prob,  f, t)

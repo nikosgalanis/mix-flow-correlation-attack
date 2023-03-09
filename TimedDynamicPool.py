@@ -35,7 +35,7 @@ def timedDynamicPool(n: int, m: int, f: int, p: float, t: int) -> None:
                     timer = datetime.now() + timedelta(seconds=t)
                     while True:
                         # check if timer has timed out
-                        if datetime.now() >= timer:
+                        if time >= timer:
                             # send packets only if pool has more than f packets
                             if len(pool) > f:
                                 # calculate number of packets to send
@@ -52,15 +52,17 @@ def timedDynamicPool(n: int, m: int, f: int, p: float, t: int) -> None:
                         else:
                             # wait for timer to time out
                             continue
+                    # shuffle the osutput order
+                    random.shuffle(msgs)
                     # write batch separator and messages
-                    output_file.write(f'\nBATCH {i // m} - Timed Dynamic-Pool Mix\n')
+                    output_file.write(f'\n')
                     for msg in msgs:
                         output_file.write(msg + str(end_time) + '\ttimedDynamicPool\n')
                     msgs = []
                     count -= packets_to_send
 
 
-def mix(n_messages, n_nodes, random_time, thres, f, t, p):
+def mix(n_messages, n_nodes, random_time, thres, fixed_prob, f, t, p):
     """
     Function to generate input messages and call the timedDynamicPool function with various parameters
     """
@@ -68,15 +70,3 @@ def mix(n_messages, n_nodes, random_time, thres, f, t, p):
     GenerateMessages.generate_input(n_messages, n_nodes, config, random_time, fixed_prob)
 
     timedDynamicPool(n_messages, thres, f, t, p)
-
-
-n_nodes = 20
-n_messages = 100
-thres = 10
-f = 5
-t = 5
-p = 0.5
-random_time = 10000
-fixed_prob = 0.15
-
-mix(n_messages, n_nodes, random_time, thres, f, t, p)

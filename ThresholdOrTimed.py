@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-
+import random 
 import GenerateMessages
 
 
@@ -35,7 +35,7 @@ def ThresholdOrTimed(threshold, time_window):
                 if threshold_count == threshold or time >= end_time:
                     # Write all messages in the buffer to the output file
                     if msgs:
-                        output_file.write(f'\nBATCH {batch_num} - Threshold or Timed Mix\n')
+                        output_file.write(f'\n')
                         for m in msgs:
                             output_file.write(
                                 f'{m[0]}\t{m[1]}\t{m[2]}\t{m[3]}\t{end_time}\t{"threshold" if threshold_count == threshold else "timed"}\n')
@@ -47,7 +47,9 @@ def ThresholdOrTimed(threshold, time_window):
                 # If the message falls outside the current time window,
                 # write all messages in the buffer to the output file
                 if msgs:
-                    output_file.write(f'\nBATCH {batch_num} - Threshold or Timed Mix\n')
+                    # shuffle the output order
+                    random.shuffle(msgs)
+                    output_file.write(f'\n')
                     for m in msgs:
                         output_file.write(f'{m[0]}\t{m[1]}\t{m[2]}\t{m[3]}\t{end_time}\t{"timed"}\n')
                     batch_num += 1
@@ -58,12 +60,11 @@ def ThresholdOrTimed(threshold, time_window):
 
         # Write remaining messages as last batch if not empty
         if msgs:
-            output_file.write(f'\nBATCH {batch_num} - Threshold or Timed Mix\n')
             for m in msgs:
                 output_file.write(f'{m[0]}\t{m[1]}\t{m[2]}\t{m[3]}\t{end_time}\t{"timed"}\n')
 
 
-def mix(n_messages, n_nodes, random_time, time_window):
+def mix(n_messages, n_nodes, random_time, time_window, fixed_prob, threshold):
     """
     Function to generate input messages and call the timed function with various time thresholds
     """
@@ -71,13 +72,3 @@ def mix(n_messages, n_nodes, random_time, time_window):
     GenerateMessages.generate_input(n_messages, n_nodes, config, random_time, fixed_prob)
 
     ThresholdOrTimed(threshold, time_window)
-
-
-n_nodes = 20
-n_messages = 10000
-time_window = 10
-random_time = 10000
-fixed_prob = 0.15
-threshold = 10
-
-mix(n_messages, n_nodes, random_time, time_window)

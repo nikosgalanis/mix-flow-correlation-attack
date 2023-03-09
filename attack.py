@@ -21,18 +21,14 @@ from datetime import datetime, timedelta
 import numpy as np
 import scipy.fft
 from sklearn import metrics
-import pywt
 from scipy import signal, fftpack
 from collections import defaultdict
 
 with open("output.txt", 'r') as f:
     lines = list(map(lambda x: x.split('\t'), f.readlines()))
 
-# TODO: change when we connect all the files, to datetime.now()
-first_src_time = datetime.strptime(lines[1][2], '%Y-%m-%d %H:%M:%S') - timedelta(seconds=1)
-first_dest_time = datetime.strptime(lines[1][4], '%Y-%m-%d %H:%M:%S') - timedelta(seconds=1)
-
-timed_window = 5
+first_src_time = datetime.now()
+first_dest_time = datetime.now()
 
 
 def dataCollection():
@@ -103,7 +99,6 @@ def dataCollection():
     return A_mapping, B_mapping
 
 
-in_batch, out_batch = dataCollection()
 
 """
     in_ips: {src_ip: [batch_0, batch_1,..., batch_n]}
@@ -115,24 +110,24 @@ in_batch, out_batch = dataCollection()
 """
 
 
-def flowPatternExtraction(in_batch, out_batch):
+def flowPatternExtraction(in_batch, out_batch, timed_window):
     in_j = in_batch.keys()
     out_j = out_batch.keys()
-
-    mix_type = "timed"
 
     X = []
     Y = []
     in_ips = []
     out_ips = []
 
-    if mix_type == "threshold":
+    # threshold-based mix
+    if timed_window == 0:
 
         for in_key in in_j:
             in_ips.append(in_key)
             batches = in_batch[in_key]
             end_time_prev = first_src_time
             x_j = []
+            end_times = []
             for batch in batches:
                 n_packs = len(batch)
                 if n_packs == 0:
@@ -141,7 +136,10 @@ def flowPatternExtraction(in_batch, out_batch):
                     # we want the in time of the last msg
                     end_time_str = batch[-1]
                     end_time = datetime.strptime(end_time_str, '%Y-%m-%d %H:%M:%S')
-
+                    if (end_time == end_time_prev):
+                        end_time_prev = end_times[-1]
+                    else:
+                        end_times.append(end_time_prev)
                     delta_time = (end_time - end_time_prev).total_seconds()
 
                     x_j_k = n_packs / delta_time
@@ -175,7 +173,8 @@ def flowPatternExtraction(in_batch, out_batch):
 
             Y.append(y_j)
 
-    if mix_type == "timed":
+    # timed based mix
+    if timed_window > 0:
 
         for in_key in in_j:
             in_ips.append(in_key)
@@ -215,8 +214,6 @@ def flowPatternExtraction(in_batch, out_batch):
     return X_array, Y_array, in_ips, out_ips
 
 
-X, Y, in_ips, out_ips = flowPatternExtraction(in_batch, out_batch)
-
 """
 X: alice, bob, charlie
 
@@ -231,7 +228,7 @@ for every i:
 def dist_mutual_info(X, Y, in_ips, out_ips):
     similar_nodes = {}
     for i, in_ip in enumerate(in_ips):
-        j, _ = min(enumerate(Y), key=lambda jy: 1 / metrics.mutual_info_score(X[i], jy[1]))
+        j, _ = min(enumerate(Y), key=lambda jy: float('inf') if metrics.mutual_info_score(X[i], jy[1]) == 0 else 1 / metrics.mutual_info_score(X[i], jy[1]))
         similar_nodes[in_ip] = out_ips[j]
 
     return similar_nodes
@@ -288,16 +285,15 @@ def flowCorrelationAttack(pred_res, true_res):
     for i in pred_res.keys():
         if pred_res[i] == true_res[i]:
             correct += 1
-    print(correct / len(pred_res.keys()))
 
     return correct / len(pred_res.keys())
 
 
-def attack(distance_func):
+def attack(distance_func, timed_window):
     # 1st step: collect the data from the mix traffic
     in_batch, out_batch = dataCollection()
     # 2nd step: create the flow pattern vectors
-    X, Y, in_ips, out_ips = flowPatternExtraction(in_batch, out_batch)
+    X, Y, in_ips, out_ips = flowPatternExtraction(in_batch, out_batch, timed_window)
     # 3rd step: calculate the distance between the X and Y vectors
     if distance_func == 'mutual_info':
         pred_res = dist_mutual_info(X, Y, in_ips, out_ips)
@@ -310,5 +306,3 @@ def attack(distance_func):
     # return the attack success
     return det_rate
 
-
-print(attack("oop"))

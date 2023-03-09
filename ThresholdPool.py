@@ -28,7 +28,9 @@ def thresholdpool(n: int, m: int, f: int) -> None:
                 pool = pool[m:]
                 # write batch separator and messages
                 end_time = time
-                output_file.write(f'\nBATCH {i // m} - Threshold Pool Mix\n')
+                output_file.write(f'\n')
+                # shuffle the output order
+                random.shuffle(msgs)
                 for msg in msgs:
                     output_file.write(msg + str(end_time) + '\tthresholdpool\n')
                 msgs = []
@@ -46,29 +48,20 @@ def thresholdpool(n: int, m: int, f: int) -> None:
                     pool = pool[m:]
                     # write batch separator and messages
                     end_time = time
-                    output_file.write(f'\nBATCH {i // m} - Threshold Pool Mix\n')
+                    output_file.write(f'\n')
+                    # shuffle the output order
+                    random.shuffle(msgs)
                     for msg in msgs:
                         output_file.write(msg + str(end_time) + '\tthresholdpool\n')
                     msgs = []
                     count -= m
 
 
-def mix(n_messages, n_nodes, random_time, thres, f):
+def mix(n_messages, n_nodes, random_time, threshold, fixed_prob , f):
     """
     Function to generate input messages and call the thresholdpool function with various parameters
     """
     config = GenerateMessages.setup(n_nodes)
     GenerateMessages.generate_input(n_messages, n_nodes, config, random_time, fixed_prob)
 
-    thresholdpool(n_messages, thres, f)
-
-
-n_nodes = 20
-n_messages = 10000
-thres = 10
-f = 5
-random_time = 10000
-fixed_prob = 0.15
-
-mix(n_messages, n_nodes, random_time, thres, f)
-
+    thresholdpool(n_messages, threshold, f)
