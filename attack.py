@@ -24,8 +24,6 @@ from sklearn import metrics
 from scipy import signal, fftpack
 from collections import defaultdict
 
-with open("output.txt", 'r') as f:
-    lines = list(map(lambda x: x.split('\t'), f.readlines()))
 
 first_src_time = datetime.now()
 first_dest_time = datetime.now()
