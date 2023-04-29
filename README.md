@@ -1,4 +1,4 @@
-# Mix flow-corellation attack
+# Flow Correlation Attacks against Mixing Networks
 
 ## Attack implemented
 In this project, we focus and implement attacks in Mix networks presented in [1]. Mix networks are a type of anonymity networks that are intended to safeguard users’ privacy by rerouting their traffic before it reaches its final destination. During such an attack, an adversary examines the patterns of the network’s traffic in an effort to achieve a correlation between the sender and the receiver of the message. This is shown to be accomplished by the authors by monitoring the traffic on the network and then analysing the timing of the messages in order to compare them with the messages that were sent by the person who is the object of the investigation. The attack pipeline uses math-based algoithms that allow an adversary to extract useful information and thus launch a flow correlation attack.
