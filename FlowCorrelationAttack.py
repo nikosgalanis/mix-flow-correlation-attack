@@ -8,7 +8,7 @@ while True:
 
 if res == 'I':
 
-    print("A signle instance of the attack will be executed, outputing the detection rate\n")
+    print("A single instance of the attack will be executed, outputing the detection rate\n")
     
     n_mess = int(input("Give the number of messages sent through the network\n"))
     assert(n_mess > 100)
@@ -93,7 +93,7 @@ elif res == 'M':
 elif res == 'A':
     dist = "fourier"
     min_mess = 600
-    max_mess = 100000
+    max_mess = 40000
     n_nodes = 20
     time_window = 5
     threshold = 10

@@ -212,17 +212,6 @@ def flowPatternExtraction(in_batch, out_batch, timed_window):
     return X_array, Y_array, in_ips, out_ips
 
 
-"""
-X: alice, bob, charlie
-
-Y: diana, elen, frank, g, i, k, l , m, n
-
-for every i:
-    find the j that they are communicating
-
-"""
-
-
 def dist_mutual_info(X, Y, in_ips, out_ips):
     similar_nodes = {}
     for i, in_ip in enumerate(in_ips):
