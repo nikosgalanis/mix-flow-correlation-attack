@@ -222,7 +222,6 @@ def dist_mutual_info(X, Y, in_ips, out_ips):
 
 
 def dist_fsb_matched_filter(X, Y, in_ips, out_ips):
-    # TODO: Problem -> Does not calculate distance correctly (pred/true flow extraction changes each run)
     similar_nodes = {}
     n_nodes = X.shape[0]
     for i in range(n_nodes):
