@@ -93,7 +93,7 @@ elif res == 'M':
 elif res == 'A':
     dist = "fourier"
     min_mess = 600
-    max_mess = 40000
+    max_mess = 100000
     n_nodes = 20
     time_window = 5
     threshold = 10
